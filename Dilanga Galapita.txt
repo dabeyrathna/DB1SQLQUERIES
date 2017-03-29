@@ -1,0 +1,567 @@
+
+Name : Dilanga Galapita Mudiyanselage
+NUID : 02592558
+
+DB 1 Project :  24 SQL Queries
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1)
+
+Information of article uploader(Doctor) with number of Articals uploaded by the uploader(Doctor)
+(Join, Group by, aggregate function)
+
+SELECT u.name as Name, count(*) as 'Article Count' FROM user u,doctor d,article a WHERE u.u_id = d.doctor_id AND d.doctor_id = a.doctor_id GROUP BY(a.doctor_id);
+
+Result :
+
++---------------+---------------+
+| Name          | Article Count |
++---------------+---------------+
+| Devin Carlson |             3 |
+| Wilma Romero  |             5 |
++---------------+---------------+
+2 rows in set (0.00 sec)
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2) 
+
+Display All the comments for article 'Art00122'
+
+SELECT art_id, comment FROM patient_comment WHERE art_id = 'Art00122';
+
+
++----------+-----------------------------+
+| art_id   | comment                     |
++----------+-----------------------------+
+| Art00122 | Really helpfull             |
+| Art00122 | Explain more about symptoms |
++----------+-----------------------------+
+2 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+3) 
+
+Top three articles recieved highest likes
+
+Top five questions / most liked questions 
+
+SELECT art_id, likes as 'Number of likes', title FROM article
+ORDER BY(likes) DESC 
+LIMIT 3;
+
++----------+-----------------+-------+
+| art_id   | Number of likes | title |
++----------+-----------------+-------+
+| Art00121 |              13 | Brain |
+| Art00127 |              13 | MRI   |
+| Art00124 |              13 | CT    |
++----------+-----------------+-------+
+3 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+4) 
+
+Article titles and link to articles which are tagged as 'MRI'
+(String Concatanation, Join)
+
+
+SELECT title, CONCAT(article_link,'\\',a.art_id,'.pdf') as link FROM article a, article_tags at WHERE a.art_id = at.art_id AND at.tag = 'MRI';
+
+
+Result :
++-------+----------------------------------+
+| title | link                             |
++-------+----------------------------------+
+| Brain | path\upload\article\Art00121.pdf |
+| MRI   | path\upload\article\Art00123.pdf |
++-------+----------------------------------+
+2 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+5) 
+
+Display questions which contains the phrase "back pain"
+(String Operations)
+ 
+SELECT q_id, question FROM question WHERE question like '%back pain%';
+
+Results:
+
++----------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| q_id     | question                                                                                                                                           |
++----------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| Q0000001 | When I was at the beginning of my illness and back pain was unable to function eating didnt even enter my head and I lost around a stone 		|
+| Q0000006 | Do we as chronic ain patients, back pain have no options?                                                                                          |
++----------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+6) 
+
+Names of doctors who have uploaded articles grater than 2
+(Group by, Having, aggregate function)
+
+
+SELECT name FROM user WHERE u_id IN (SELECT doctor_id FROM article GROUP BY(doctor_id) HAVING count(*) > 2);
+
+Result :
++---------------+
+| name          |
++---------------+
+| Wilma Romero  |
+| Devin Carlson |
++---------------+
+2 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+7) 
+
+Display all the doctors' names who have never answerd any question
+(Set operation not exist using NOT IN, Sub query)
+
+
+SELECT name FROM USER WHERE u_id NOT IN (SELECT doctor_id FROM doctor_answer);
+
+
+Result :
++--------------------+
+| name               |
++--------------------+
+| Wilma Romero       |
+| Amber Mclaughlin   |
+| Van Gibson         |
+| Devin Carlson      |
+| Megan	Craig        |
+| Stephanie Brown    |
+| Jonathon Rice      |
+| Maxine Russell     |
+| Lance	Walters      |
+| Antoinette Coleman |
+| Ronnie Bowman      |
+| Alma Mcgee         |
+| Shelley Baker      |
+| Fredrick Casey     |
+| Joey Cain          |
+| Kristen Briggs     |
+| Sheri	Campbell     |
+| Ethel Ray          |
++--------------------+
+18 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+8)
+Average number of answers per question and in decending order of average
+(ORDER BY, GROUP BY, aggregate function, Subqueries in the FROM Clause)
+
+
+SELECT t.q_id as 'Question Id', AVG(counts) as Average FROM (SELECT q_id, Count(*) AS counts FROM answer GROUP BY q_id) AS t GROUP BY (t.q_id) ORDER BY (Average) DESC;
+
+Result :
++-------------+---------+
+| Question Id | Average |
++-------------+---------+
+| Q0000002    |  6.0000 |
+| Q0000001    |  3.0000 |
+| Q0000007    |  1.0000 |
+| Q0000004    |  1.0000 |
+| Q0000005    |  1.0000 |
++-------------+---------+
+5 rows in set (0.00 sec)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+9)
+
+Reset all the like counts of questions posted before year 2000
+
+UPDATE question
+SET likes = 0
+WHERE YEAR(question_time) > 2000
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+10)
+
+Contact details(Phone numbers) of Doctors doesn't specify their specialization 
+
+SELECT distinct(u.name) as 'Doctor Name', p.phone FROM user u, phone p, doctor d WHERE u.u_id = d.doctor_id AND u.u_id = p.u_id AND specialization is NULL;
+
++-------------+------------+
+| Doctor Name | phone      |
++-------------+------------+
+| Colin	Rios  | 4027123682 |
+| Colin	Rios  | 4027435673 |
++-------------+------------+
+2 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+11)
+
+Patiets who have asked only one question so far
+(Duplicate values elimination)
+
+SELECT name from user WHERE u_id IN (SELECT patient_id FROM question GROUP BY(patient_id) HAVING (count(*) = 1));
+
+
+Result:
+
++---------------------------+
+| Maximum number of answers |
++---------------------------+
+|                         6 |
++---------------------------+
+1 row in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+12) Remove all the questions which have no answers and asked befor year 2000
+(DELETE, except using NOI IN, SUB QUERY, DATE functions)
+
+
+DELETE FROM question WHERE q_id NOT IN (SELECT q_id FROM answer) AND YEAR(question_time) < 2000 ;
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+13) 
+
+Questions asked in 2000 or 2010
+
+
+SELECT q_id, question FROM question WHERE YEAR(question_time) IN(2000,2010);
+
+
+
+Result:
+
++----------+--------------------------------------------------+
+| q_id     | question                                         |
++----------+--------------------------------------------------+
+| Q0000003 | why do i constantly feel nausea?                 |
+| Q0000008 | Why did the Fischer Wallace device stop working? |
++----------+--------------------------------------------------+
+2 rows in set (0.03 sec)
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+14)
+
+Remove quetions which does not have answers as well as more dislikes (negative likes)
+(Using Left join achived except and delete)
+
+
+DELETE question FROM question LEFT JOIN answer ON question.q_id = answer.q_id WHERE answer.q_id is NULL AND question.likes < 0;
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+15)
+
+
+Update all the private questions asked by the patient 'P312', to public state.
+
+
+UPDATE question 
+SET state = 'public'
+WHERE patient_id = 'P312' AND state = 'private';
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+16)
+
+Articles uploaded withing year 2000 to year 2016
+
+
+
+SELECT distinct(doctor_id) as 'Doctor Id',u.name as 'Uploaded By', Description, year(a.upload_date) as 'Uploaded year' FROM article a, user u WHERE u.u_id = a.doctor_id AND YEAR(a.upload_date) BETWEEN 2000 AND 2016;
+
+
+
+Result :
++-----------+---------------+----------------------------+---------------+
+| Doctor Id | Uploaded By   | Description                | Uploaded year |
++-----------+---------------+----------------------------+---------------+
+| D123      | Wilma Romero  | Neurology India            |          2012 |
+| D121      | Devin Carlson | Cancer protection          |          2010 |
+| D121      | Devin Carlson | Neurology State of the art |          2012 |
+| D123      | Wilma Romero  | Scans for health           |          2012 |
+| D121      | Devin Carlson | Pain Research & Management |          2010 |
++-----------+---------------+----------------------------+---------------+
+5 rows in set (0.00 sec)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+17)
+
+Create View to get age of every doctor. Using that View, display Doctor Name, Hospital and Specialization of doctors' age grater than 30. 
+
+
+
+DROP VIEW IF EXISTS doctor_age;
+
+CREATE VIEW doctor_age as SELECT u_id, name, year(now())-year(dob) as age FROM user WHERE u_id like 'D%';
+
+SELECT a.name as 'Doctor Name', d.Hospital as 'Hospital', d.specialization as 'Specialization' FROM doctor d, patient_age a WHERE a.u_id = d.doctor_id AND a.age > 30;  
+
+
+Result:
+
++----------------+--------------------+------------------+
+| Doctor Name    | Hospital           | Specialization   |
++----------------+--------------------+------------------+
+| Kristen Briggs | Community Memorial | Neurology        |
+| Alma Mcgee     | Omaha hospital     | Cardiologist     |
+| Colin	Rios     | Lincoln hospital   | NULL             |
+| Megan	Craig    | Columbus Community | Anesthesiologist |
+| Wilma Romero   | Columbus Community | Neurology        |
++----------------+--------------------+------------------+
+5 rows in set (0.00 sec)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+18)
+
+Display maximum number of answers for a question all the time
+
+
+
+SELECT MAX(y.num) as 'Maximum number of answers'
+  		FROM (SELECT q_id,COUNT(*) AS num FROM answer GROUP BY(q_id)) y
+
+
+Result :
++---------------------------+
+| Maximum number of answers |
++---------------------------+
+|                         6 |
++---------------------------+
+1 row in set (0.00 sec)
+s
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+19)
+
+Stored procedure to delete user and display message 
+
+
+DROP PROCEDURE IF EXISTS removeUser;
+
+delimiter $$
+CREATE PROCEDURE removeUser(IN user_id CHAR(4))
+BEGIN 
+    DECLARE message VARCHAR(100);
+
+    DELETE FROM user WHERE  u_id = user_id ;
+    SELECT CONCAT('User account having user ID = ',user_id,' deleted') as "Message";
+END $$
+
+delimiter ;
+
+CALL removeUser('P211');
+
+
+Result :
+
++-------------------------------------------+
+| Message                                   |
++-------------------------------------------+
+| User account having user ID =P211 deleted |
++-------------------------------------------+
+1 row in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+20)
+
+
+Create view for calculate patient age and using that remove all the registerd patients age less than 18. 
+
+
+
+DROP VIEW IF EXISTS patient_age;
+
+CREATE VIEW patient_age as SELECT u_id, year(now())-year(dob) as age FROM user WHERE u_id like 'P%';
+
+DELETE user FROM user, patient_age WHERE user.u_id = patient_age.u_id AND patient_age.age < 18; 
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+21)
+
+
+Tags wihch are tagged with both artcles and questions
+(SET Intersection using Inner join)
+
+
+
+SELECT distinct(qt.tag) FROM question_tags qt INNER JOIN article_tags at ON qt.tag = at.tag;
+
+
+
+Result :
++--------+
+| tag    |
++--------+
+| Mental |
+| MRI    |
+| CT     |
+| Flu    |
++--------+
+4 rows in set (0.00 sec)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+22)
+
+ Name and Address of all the patients in Omaha and doctors works who works either 'Columbus Community','Community Memorial' and ORDER BY name
+(UNION, ORDER BY, )
+
+
+Select name as Name,CONCAT(street," ",city," ",zip_code) as Address 
+from
+(
+   Select name, street, city, zip_code
+   From User
+   Where city = 'Omaha'
+
+  	Union
+
+   Select name, street, city, zip_code
+   From User
+   Where u_id IN (SELECT doctor_id FROM doctor WHERE hospital IN ('Columbus Community','Community Memorial'))
+) userInfo
+order by name;
+
+
+Results :
++--------------------+----------------------------+
+| Name               | Address                    |
++--------------------+----------------------------+
+| Alma Mcgee         | 1212 Dodge St. Omaha 68144 |
+| Amber Mclaughlin   | 23 Cass St. Omaha 68114    |
+| Antoinette Coleman | 1212 Dodge St. Omaha 68144 |
+| Colin	Rios         | 1212 Dodge St. Omaha 68144 |
+| Devin Carlson      | 23 Cass St. Omaha 68114    |
+| Ethel Ray          | 1212 Dodge St. Omaha 68144 |
+| Fredrick Casey     | 1212 Dodge St. Omaha 68144 |
+| Joey Cain          | 23 Cass St. Omaha 68114    |
+| Jonathon Rice      | 1212 Dodge St. Omaha 68144 |
+| Kristen Briggs     | 1212 Dodge St. Omaha 68144 |
+| Lance	Walters      | 23 Cass St. Omaha 68114    |
+| Maxine Russell     | 23 Cass St. Omaha 68114    |
+| Megan	Craig        | 1212 Dodge St. Omaha 68144 |
+| Ronnie Bowman      | 23 Cass St. Omaha 68114    |
+| Shelley Baker      | 23 Cass St. Omaha 68114    |
+| Sheri	Campbell     | 23 Cass St. Omaha 68114    |
+| Stephanie Brown    | 23 Cass St. Omaha 68114    |
+| Van Gibson         | 1212 Dodge St. Omaha 68144 |
+| Wilma Romero       | 1212 Dodge St. Omaha 68144 |
+| Wilma Romero       | 23 Cass St. Omaha 68114    |
++--------------------+----------------------------+
+20 rows in set (0.00 sec)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+23)
+
+
+
+
+Most liked questions of all time
+(Join, sub query, Aggregation)
+
+SELECT p.patient_id, q.title, q.question, q.likes FROM question q, patient p WHERE q.patient_id = p.patient_id AND q.likes IN (SELECT MAX(likes) FROM question);
+
+
+Result:
+
++------------+----------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------+
+| patient_id | title                                              | question                                                                                                                                                                                                         | likes |
++------------+----------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------+
+| P123       | Wellbutrin - Does the fuzzy vision and sensitivity | When I was at the beginning of my illness and back pain was unable to function eating didnt even enter my head and I lost around a stone and a half (my usual weight sticks around 10 - 10 1/2 stone) to 9 stone |    12 |
++------------+----------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------+
+1 row in set (0.06 sec)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+24)
+
+Update working hospitals of doctors' such that, if city of doctor is Papillion, then the new hospital is 'Community Memorial', where as city is 'Grand Island', 
+then hospital is 'Columbus Community' 
+
+
+
+UPDATE user u JOIN doctor d ON u.u_id = d.doctor_id 
+SET d.hospital = CASE
+	WHEN u.city = 'Papillion'
+		THEN 'Community Memorial'
+	WHEN u.city = 'Grand Island'
+		THEN 'Columbus Community'
+END;
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+

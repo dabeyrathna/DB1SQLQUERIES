@@ -1,0 +1,328 @@
+
+
+DROP DATABASE IF EXISTS medicalForum1;
+
+CREATE DATABASE medicalForum1;
+
+USE medicalForum1; 
+
+
+
+
+
+CREATE TABLE user(
+	u_id CHAR(4) NOT NULL,
+	type ENUM('doctor','patient'),
+ 	name VARCHAR(100),
+	street VARCHAR(255),
+	city VARCHAR(50),
+	zip_code VARCHAR(5),
+	password VARCHAR(250),
+	dob DATE,
+	PRIMARY KEY(u_id)
+);
+
+CREATE TABLE doctor(
+	doctor_id CHAR(4),
+	type ENUM('doctor'),
+	hospital VARCHAR(100),
+	specialization VARCHAR(100),
+	PRIMARY KEY (doctor_id),
+	CONSTRAINT fk_doctor_user FOREIGN KEY (doctor_id,type) 
+		REFERENCES user(u_id,type)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE
+);
+
+CREATE TABLE patient(
+	patient_id CHAR(4),
+	type ENUM('patient'),
+	PRIMARY KEY (patient_id),
+	CONSTRAINT fk_patient_user FOREIGN KEY (patient_id,type) 
+		REFERENCES user(u_id,type)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE
+);
+
+CREATE TABLE phone(
+	u_id CHAR(4) NOT NULL,
+	phone CHAR(10) NOT NULL,
+	PRIMARY KEY(u_id,phone),
+		CONSTRAINT fk_phone_user FOREIGN KEY (u_id) 
+			REFERENCES user(u_id)
+				ON DELETE CASCADE
+				ON UPDATE CASCADE
+);
+
+CREATE TABLE question(
+	q_id CHAR(8) NOT NULL,
+	patient_id CHAR(4),
+	title VARCHAR(100),
+	question VARCHAR(255),
+	question_time DATETIME,
+	state ENUM('private','public'),
+	likes INT,
+	PRIMARY KEY(q_id),	
+	CONSTRAINT fk_patient_question FOREIGN KEY (patient_id) 
+		REFERENCES patient(patient_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE
+);
+
+
+CREATE TABLE answer(
+	q_id CHAR(8) NOT NULL,
+	ans_id CHAR(8) NOT NULL,
+	answer VARCHAR(255),
+	answer_time DATETIME,
+	likes INT,
+	PRIMARY KEY(ans_id,q_id),	
+	CONSTRAINT fk_question_answer FOREIGN KEY (q_id) 
+		REFERENCES question(q_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE
+);
+
+
+CREATE TABLE doctor_answer(
+	doctor_id CHAR(4) NOT NULL,
+	q_id CHAR(8) NOT NULL,
+	ans_id CHAR(8) NOT NULL,
+	PRIMARY KEY(doctor_id,q_id,ans_id),
+	CONSTRAINT fk_doctor_answer FOREIGN KEY (doctor_id) 
+		REFERENCES doctor(doctor_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE,
+
+	CONSTRAINT fk_answer_d_ans FOREIGN KEY (q_id,ans_id) 
+		REFERENCES answer(q_id,ans_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE
+);
+
+
+CREATE TABLE article(
+	art_id CHAR(8) NOT NULL,
+	doctor_id CHAR(4) NOT NULL,
+	title VARCHAR(100),
+	description VARCHAR(255),
+	article_link VARCHAR(255),
+	upload_date DATE,
+	likes INT,
+	PRIMARY KEY(art_id),
+	CONSTRAINT fk_doctor_article FOREIGN KEY (doctor_id) 
+		REFERENCES doctor(doctor_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE
+);
+
+
+CREATE TABLE patient_comment(
+	art_id CHAR(8) NOT NULL,
+	patient_id CHAR(4) NOT NULL,
+	comment VARCHAR(255),
+	commentDate DATE,
+	PRIMARY KEY(art_id,patient_id),
+	CONSTRAINT fk_patent_article FOREIGN KEY (patient_id) 
+		REFERENCES patient(patient_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE,
+
+	CONSTRAINT fk_article_patient FOREIGN KEY (art_id) 
+		REFERENCES article(art_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE
+);	
+
+
+CREATE TABLE question_tags(
+	q_id CHAR(10) NOT NULL,
+	tag VARCHAR(50),
+	PRIMARY KEY(q_id,tag),
+	CONSTRAINT fk_question_tags FOREIGN KEY (q_id) 
+		REFERENCES question(q_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE	
+);
+
+
+CREATE TABLE article_tags(
+	art_id CHAR(10) NOT NULL,
+	tag VARCHAR(50),
+	PRIMARY KEY(art_id,tag),
+	CONSTRAINT fk_question_tags FOREIGN KEY (art_id) 
+		REFERENCES article(art_id)
+			ON DELETE CASCADE
+			ON UPDATE CASCADE	
+);
+
+
+INSERT INTO USER
+VALUES
+('D123','doctor','Wilma Romero','23 Cass St.','Omaha','68114','pass','1988-12-02'),
+('D124','doctor','Wilma Romero','1212 Dodge St.','Lincoln','68144','pass','1982-01-02'),
+('D125','doctor','Amber Mclaughlin','23 Cass St.','Omaha','68114','pass','1981-12-02'),
+('P124','patient','Van Gibson','1212 Dodge St.','Omaha','68144','pass','1984-01-02'),
+('D121','doctor','Devin Carlson','23 Cass St.','Grand Island','68114','pass','1988-12-02'),
+('D122','doctor','Megan	Craig','1212 Dodge St.','Omaha','68144','pass','1982-01-02'),
+('P121','doctor','Stephanie Brown','23 Cass St.','Omaha','68114','pass','1981-12-02'),
+('P122','patient','Jonathon Rice','1212 Dodge St.','Omaha','68144','pass','1984-01-02'),
+('D211','doctor','Maxine Russell','23 Cass St.','Lincoln','68114','pass','1988-12-02'),
+('D212','doctor','Colin	Rios','1212 Dodge St.','Grand Island','68144','pass','1982-01-02'),
+('P211','patient','Lance Walters','23 Cass St.','Omaha','68114','pass','1981-12-02'),
+('P212','patient','Antoinette Coleman','1212 Dodge St.','Omaha','68144','pass','1984-01-02'),
+('P219','patient','Antoinette Coleman','1212 Dodge St.','Grand Island','68144','pass','2004-01-02'),
+('P319','patient','Antoinette Coleman','1212 Dodge St.','Lincoln','68144','pass','2002-01-02'),
+('D319','doctor','Ronnie Bowman','23 Cass St.','Omaha','68114','pass','1988-12-02'),
+('D312','doctor','Alma Mcgee','1212 Dodge St.','Lincoln','68144','pass','1982-01-02'),
+('D311','doctor','Shelley Baker','23 Cass St.','Omaha','68114','pass','1981-12-02'),
+('P312','patient','Fredrick Casey','1212 Dodge St.','Grand Island','68144','pass','1984-01-02'),
+('D314','doctor','Joey Cain','23 Cass St.','Grand Island','68114','pass','1988-12-02'),
+('D413','doctor','Kristen Briggs','1212 Dodge St.','Papillion','68144','pass','1988-01-02'),
+('P413','doctor','Sheri	Campbell','23 Cass St.','Lincoln','68114','pass','1981-12-02'),
+('P314','patient','Ethel Ray','1212 Dodge St.','Omaha','68144','pass','1984-01-02');
+
+
+INSERT INTO doctor
+VALUES
+('D314','doctor','Columbus Community','Cardiologist'),
+('D413','doctor','Community Memorial','Neurology'),
+('D312','doctor','Omaha hospital','Cardiologist'),
+('D311','doctor','CHI Health','Surgery'),
+('D212','doctor','Lincoln hospital',NULL),
+('D211','doctor','Omaha hospital','Anesthesiologist'),
+('D121','doctor','Community Memorial','Cardiologist'),
+('D122','doctor','Columbus Community','Anesthesiologist'),
+('D124','doctor','Columbus Community','Neurology'),
+('D123','doctor','Community Memorial','Surgery');
+
+
+
+
+INSERT INTO patient
+VALUES
+('P123','patient'),
+('P121','patient'),
+('P122','patient'),
+('P211','patient'),
+('P212','patient'),
+('P311','patient'),
+('P312','patient'),
+('P413','patient'),
+('P124','patient'),
+('P314','patient');
+
+INSERT INTO phone
+VALUES
+('P123','4025559666'),
+('D123','4027894562'),
+('P123','4025777666'),
+('D123','4024494562'),
+('P123','4025546666'),
+('D212','4027123682'),
+('P123','4028415666'),
+('P312','4026543682'),
+('P123','4025545688'),
+('D212','4027435673');
+
+INSERT INTO question
+VALUES
+('Q0000001','P123','Wellbutrin - Does the fuzzy vision and sensitivity','When I was at the beginning of my illness and back pain was unable to function eating didnt even enter my head and I lost around a stone and a half (my usual weight sticks around 10 - 10 1/2 stone) to 9 stone','2017-12-31 12:59:59','public',12),
+('Q0000002','P312','Does it always take three days to get relief from butran 5mcg patch?','Starting remeron WD week 8. Still insomnia and morning anxiety','2017-12-31 12:59:59','private',1),
+('Q0000003','P123','Why do i constantly feel nausea?','why do i constantly feel nausea?','2000-12-31 12:59:59','public',-3),
+('Q0000004','P312','3 week TKR post op Im only getting 75d bend','How can I reduce my husbands tramadol intake? He is taking more and more?','2017-12-31 12:59:59','private',4),
+('Q0000005','P123','Does it always take three days to get relief from butran 5mcg patch?','Why did the Fischer Wallace device stop working?','1999-12-31 12:59:59','public',4),
+('Q0000006','P123','a meniscus tear (horizontal) doesnt always show on the MRI itself','Do we as chronic ain patients, back pain have no options?','2017-12-31 12:59:59','private',-2),
+('Q0000007','P312','Wellbutrin - Does the fuzzy vision and sensitivity','Does the fuzzy vision and sensitivity to bright light','2016-12-31 12:59:59','public',0),
+('Q0000008','P312','why do i constantly feel nausea?','Why did the Fischer Wallace device stop working?','2010-12-31 12:59:59','private',0),
+('Q0000009','P123','Does it always take three days to get back pain relief from butran 5mcg patch?','Unfortunately with all the new laws the government has passed on pain meds','2016-12-31 12:59:59','public',0),
+('Q0000010','P121','A meniscus tear (horizontal) doesnt always show on the MRI itself','Do we as chronic ain patients, have no options?','1998-12-31 12:59:59','private',0);
+
+
+
+INSERT INTO answer
+VALUE
+('Q0000001','A0000001','My guess is the doctor put you on mirt for your insomnia.','1999-12-31 23:59:59',12),
+('Q0000002','A0000001',' If I do not get that extra I get the same symptoms as you. ','1999-12-31 12:59:59',1),
+('Q0000001','A0000002','I take 7.5mg mirt for my insomnia PLUS sertraline (an SSR antidepressant) for my anxiety.  That combination works well apart from the need for 10 hours sleep.','1999-12-31 23:59:59',12),
+('Q0000002','A0000002','I should add that when I started mirtazapine I couldnt stop eating even waking in the night craving food however for the last month I have curbed this and have replaced my binging with fruit and vegetable but with no improvement.','1999-12-31 12:59:59',1),
+('Q0000005','A0000003','I have just joined Slimming World but i believe there is no point starting this until I quit Mirtazapine.','1999-12-31 23:59:59',12),
+('Q0000002','A0000003','I had an appetite in the first week.','1999-12-31 12:59:59',9),
+('Q0000002','A0000007','Answer content 1','2000-12-1 12:59:59',10),
+('Q0000007','A0000006','Answer content 2','1999-1-31 12:59:59',20),
+('Q0000001','A0000004','Answer content 5','1999-12-31 12:59:59',-3),
+('Q0000002','A0000005','Answer content 3','2000-1-1 12:59:59',-5),
+('Q0000004','A0000005','Answer content 6','1999-12-31 12:59:59',1),
+('Q0000002','A0000004','Answer content 4','2005-1-31 12:59:59',3);
+
+
+INSERT INTO doctor_answer
+VALUE
+('D123','Q0000001','A0000001'),
+('D212','Q0000002','A0000001'),
+('D123','Q0000001','A0000002'),
+('D212','Q0000002','A0000005'),
+('D123','Q0000002','A0000005'),
+('D123','Q0000007','A0000006'),
+('D212','Q0000002','A0000002'),
+('D123','Q0000001','A0000003'),
+('D212','Q0000005','A0000003'),
+('D123','Q0000001','A0000008'),
+('D212','Q0000002','A0000009'),
+('D123','Q0000007','A0000004'),
+('D123','Q0000007','A0000009'),
+('D212','Q0000002','A0000010');
+
+INSERT INTO article
+VALUE
+('Art00121','D123','Brain','Neurology India','path\\upload\\article','2012-12-02',13),
+('Art00127','D123','MRI','Neurology India','path\\upload\\article','2012-12-02',13),
+('Art00124','D123','CT','Neurology India','path\\upload\\article','2012-12-02',13),
+('Art00122','D121','BMC Cancer','Cancer protection','path\\upload\\article','2010-12-02',1),
+('Art00125','D123','Brain','Neurology India','path\\upload\\article','2012-12-02',13),
+('Art00123','D121','MRI','Neurology State of the art','path\\upload\\article','2012-12-02',13),
+('Art00126','D123','CT','Scans for health','path\\upload\\article','2012-12-02',13),
+('Art00128','D121','BMC Cancer','Pain Research & Management','path\\upload\\article','2010-12-02',1);
+
+INSERT INTO patient_comment
+VALUES
+('Art00121','P123','Really helpfull', '2012-12-02'),
+('Art00122','P231','Explain more about symptoms', '2013-12-02'),
+('Art00123','P123','Really helpfull', '2012-12-02'),
+('Art00122','P124','Really helpfull', '2012-12-02'),
+('Art00123','P231','Explain more about symptoms', '2013-12-02'),
+('Art00123','P121','Really helpfull', '2012-12-02'),
+('Art00124','P123','Great article', '2013-12-02');
+
+INSERT INTO question_tags
+VALUES
+('Q0000001','MRI'),
+('Q0000002','MRI'),
+('Q0000003','Flu'),
+('Q0000005','MRI'),
+('Q0000007','Mental'),
+('Q0000002','CT');
+
+INSERT INTO article_tags
+VALUES
+('Art00121','MRI'),
+('Art00122','FLU'),
+('Art00121','Cancer'),
+('Art00123','MRI'),
+('Art00121','Mental'),
+('Art00124','Scans'),
+('Art00122','CT');
+
+SELECT * FROM user;
+SELECT * FROM doctor;
+SELECT * FROM patient;
+SELECT * FROM question;
+SELECT * FROM answer;
+SELECT * FROM article_tags;
+SELECT * FROM question_tags;
+SELECT * FROM phone;
+SELECT * FROM doctor_answer;
+SELECT * FROM patient_comment;
+SELECT * FROM article;
+
+
