@@ -6,14 +6,11 @@ NUID : 02592558
 
 __________________________________________________________________________________________________________________________________
 
-DROP DATABASE IF EXISTS medicalForum1;
+DROP DATABASE IF EXISTS medicalForum;
 
-CREATE DATABASE medicalForum1;
+CREATE DATABASE medicalForum;
 
-USE medicalForum1; 
-
-
-
+USE medicalForum; 
 
 
 CREATE TABLE user(
@@ -34,8 +31,8 @@ CREATE TABLE doctor(
 	hospital VARCHAR(100),
 	specialization VARCHAR(100),
 	PRIMARY KEY (doctor_id),
-	CONSTRAINT fk_doctor_user FOREIGN KEY (doctor_id,type) 
-		REFERENCES user(u_id,type)
+	CONSTRAINT fk_doctor_user FOREIGN KEY (doctor_id) 
+		REFERENCES user(u_id)
 			ON DELETE CASCADE
 			ON UPDATE CASCADE
 );
@@ -44,8 +41,8 @@ CREATE TABLE patient(
 	patient_id CHAR(4),
 	type ENUM('patient'),
 	PRIMARY KEY (patient_id),
-	CONSTRAINT fk_patient_user FOREIGN KEY (patient_id,type) 
-		REFERENCES user(u_id,type)
+	CONSTRAINT fk_patient_user FOREIGN KEY (patient_id) 
+		REFERENCES user(u_id)
 			ON DELETE CASCADE
 			ON UPDATE CASCADE
 );
@@ -163,6 +160,8 @@ CREATE TABLE article_tags(
 );
 
 
+
+
 INSERT INTO USER
 VALUES
 ('D123','doctor','Wilma Romero','23 Cass St.','Omaha','68114','pass','1988-12-02'),
@@ -191,8 +190,8 @@ VALUES
 
 INSERT INTO doctor
 VALUES
-('D314','doctor','Columbus Community','Cardiologist'),
-('D413','doctor','Community Memorial','Neurology'),
+('D317','doctor','Columbus Community','Cardiologist'),
+('D613','doctor','Community Memorial','Neurology'),
 ('D312','doctor','Omaha hospital','Cardiologist'),
 ('D311','doctor','CHI Health','Surgery'),
 ('D212','doctor','Lincoln hospital',NULL),
@@ -209,8 +208,8 @@ INSERT INTO patient
 VALUES
 ('P123','patient'),
 ('P121','patient'),
-('P122','patient'),
-('P211','patient'),
+('P129','patient'),
+('P216','patient'),
 ('P212','patient'),
 ('P311','patient'),
 ('P312','patient'),
@@ -319,6 +318,77 @@ VALUES
 ('Art00124','Scans'),
 ('Art00122','CT');
 
+
+
+
+
+
+
+DROP PROCEDURE IF EXISTS delete_user_proc;
+
+DELIMITER //
+
+create PROCEDURE delete_user_proc(in uid CHAR(4), in type enum('patient','doctor'))
+BEGIN 
+IF type = 'patient' THEN
+	DELETE FROM patient WHERE patient.patient_id = uid;
+ELSE 
+	DELETE FROM doctor WHERE doctor.doctor_id = uid;
+END IF;
+END//
+
+DELIMITER ;
+
+
+
+
+DROP TRIGGER IF EXISTS delete_user;
+
+DELIMITER $$
+CREATE TRIGGER delete_user AFTER DELETE ON user
+FOR EACH ROW
+BEGIN
+   CALL delete_user_proc(OLD.u_id,OLD.type);
+END;
+$$
+
+DELIMITER ;
+
+
+
+
+
+DROP PROCEDURE IF EXISTS insert_user_proc;
+
+DELIMITER //
+
+create PROCEDURE insert_user_proc(in uid CHAR(4), in type enum('patient','doctor'))
+BEGIN 
+IF type = 'patient' THEN
+	INSERT INTO patient (patient_id,type) VALUES (uid,type);
+ELSE 
+	INSERT INTO doctor (doctor_id,type) VALUES (uid,type);
+END IF;
+END//
+
+DELIMITER ;
+
+
+
+
+
+
+DROP TRIGGER IF EXISTS insert_user;
+
+DELIMITER $$
+CREATE TRIGGER insert_user AFTER INSERT ON user
+FOR EACH ROW
+BEGIN
+   CALL insert_user_proc(NEW.u_id,NEW.type);
+END;
+$$
+
+DELIMITER ;
 
 
 
